@@ -10,7 +10,9 @@ import {
   ArrowLeft,
   GraduationCap,
   Trophy,
-  RotateCcw
+  RotateCcw,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { getChaptersBySubject, getChapterById } from '../data/studyContent';
 import { getQuestionsBySubject } from '../data/questionBank';
@@ -29,6 +31,7 @@ export function StudyMode({ initialSubject = 'general_awareness', onExit }: Stud
   const [studyView, setStudyView] = useState<StudyView>('notes');
   const [selectedSubject, setSelectedSubject] = useState<SubjectId>(initialSubject);
   const [activeChapterId, setActiveChapterId] = useState<string>('');
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState<boolean>(false);
   
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -108,113 +111,169 @@ export function StudyMode({ initialSubject = 'general_awareness', onExit }: Stud
   };
 
   const renderSidebar = () => (
-    <div className="w-72 bg-white dark:bg-[#141824] border-r border-stone-200 dark:border-stone-800 flex flex-col h-full shrink-0">
-      <div className="p-4 border-b border-stone-200 dark:border-stone-800">
-        <button 
-          onClick={onExit}
-          className="flex items-center text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-4 text-sm font-medium"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
-        </button>
-        <h2 className="text-xl font-display font-bold text-stone-900 dark:text-stone-100 flex items-center">
-          <BookOpen className="w-5 h-5 mr-2 text-teal-600 dark:text-teal-500" /> Study Notes
-        </h2>
-      </div>
-      
-      <div className="p-3 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-[#1C2033] flex flex-wrap gap-2">
-        {Object.entries(SUBJECTS).map(([id, subject]) => (
-          <button
-            key={id}
-            onClick={() => {
-              setSelectedSubject(id as SubjectId);
-              setStudyView('notes');
-            }}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-              selectedSubject === id 
-                ? 'bg-teal-600 text-white shadow-sm' 
-                : 'bg-white dark:bg-[#0B0F1A] text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-800 hover:border-teal-500/50'
-            }`}
-          >
-            {subject.name}
-          </button>
-        ))}
-      </div>
+    <>
+      {/* Mobile backdrop when sidebar is open */}
+      {!isSidebarMinimized && (
+        <div
+          className="md:hidden fixed inset-0 top-16 bg-stone-900/40 dark:bg-black/60 backdrop-blur-xs z-30 transition-opacity"
+          onClick={() => setIsSidebarMinimized(true)}
+          aria-hidden="true"
+        />
+      )}
 
-      <div className="flex-1 overflow-y-auto p-2">
-        <h3 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-2 px-2 mt-2">
-          Chapters
-        </h3>
-        <div className="space-y-1">
-          {chapters.map((chapter) => {
-            const prog = chapterProgress[chapter.id];
-            const stars = prog?.stars || 0;
-            const isActive = chapter.id === activeChapterId;
-            
-            return (
-              <button
-                key={chapter.id}
-                onClick={() => {
-                  setActiveChapterId(chapter.id);
-                  setStudyView('notes');
-                }}
-                className={`w-full text-left px-3 py-3 rounded-lg flex items-start transition-colors ${
-                  isActive 
-                    ? 'bg-teal-50 dark:bg-teal-950/30 border-l-4 border-teal-500' 
-                    : 'hover:bg-stone-50 dark:hover:bg-stone-800/50 border-l-4 border-transparent'
-                }`}
-              >
-                <div className="flex-1">
-                  <div className={`text-sm font-medium ${isActive ? 'text-teal-700 dark:text-teal-400' : 'text-stone-700 dark:text-stone-300'}`}>
-                    {chapter.title}
-                  </div>
-                  <div className="flex items-center mt-1.5 space-x-0.5">
-                    {[1, 2, 3].map(star => (
-                      <Star 
-                        key={star} 
-                        className={`w-3.5 h-3.5 ${
-                          star <= stars 
-                            ? 'text-amber-500 fill-amber-500' 
-                            : 'text-stone-300 dark:text-stone-600'
-                        }`} 
-                      />
-                    ))}
-                  </div>
-                </div>
-              </button>
-            )
-          })}
-          {chapters.length === 0 && (
-            <div className="px-3 py-4 text-sm text-stone-500 dark:text-stone-400 italic">
-              No chapters available for this subject.
-            </div>
-          )}
+      <aside
+        className={`bg-white dark:bg-[#141824] border-r border-stone-200 dark:border-stone-800 flex flex-col h-full shrink-0 z-40 transition-all duration-300 ease-in-out ${
+          isSidebarMinimized
+            ? 'hidden'
+            : 'fixed md:relative inset-y-0 left-0 top-16 md:top-0 w-80 max-w-[85vw] md:w-72 shadow-2xl md:shadow-none'
+        }`}
+      >
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800">
+          <div className="flex items-center justify-between mb-3">
+            <button 
+              onClick={onExit}
+              className="flex items-center text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors text-sm font-medium cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+            </button>
+
+            {/* Minimize button */}
+            <button
+              onClick={() => setIsSidebarMinimized(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 bg-stone-100 dark:bg-stone-800/80 hover:bg-stone-200 dark:hover:bg-stone-700/80 rounded-lg transition-colors border border-stone-200/80 dark:border-stone-700 cursor-pointer shadow-2xs"
+              title="Minimize study notes board"
+              aria-label="Minimize study notes board"
+            >
+              <PanelLeftClose className="w-3.5 h-3.5" />
+              <span>Minimize</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-display font-bold text-stone-900 dark:text-stone-100 flex items-center">
+              <BookOpen className="w-5 h-5 mr-2 text-teal-600 dark:text-teal-500" /> Study Notes
+            </h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-800/50 font-medium">
+              {chapters.length} {chapters.length === 1 ? 'Chapter' : 'Chapters'}
+            </span>
+          </div>
         </div>
-      </div>
-    </div>
+        
+        <div className="p-3 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-[#1C2033] flex flex-wrap gap-2">
+          {Object.entries(SUBJECTS).map(([id, subject]) => (
+            <button
+              key={id}
+              onClick={() => {
+                setSelectedSubject(id as SubjectId);
+                setStudyView('notes');
+              }}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                selectedSubject === id 
+                  ? 'bg-teal-600 text-white shadow-sm' 
+                  : 'bg-white dark:bg-[#0B0F1A] text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-800 hover:border-teal-500/50'
+              }`}
+            >
+              {subject.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-2">
+          <h3 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-2 px-2 mt-2">
+            Chapters
+          </h3>
+          <div className="space-y-1">
+            {chapters.map((chapter) => {
+              const prog = chapterProgress[chapter.id];
+              const stars = prog?.stars || 0;
+              const isActive = chapter.id === activeChapterId;
+              
+              return (
+                <button
+                  key={chapter.id}
+                  onClick={() => {
+                    setActiveChapterId(chapter.id);
+                    setStudyView('notes');
+                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                      setIsSidebarMinimized(true);
+                    }
+                  }}
+                  className={`w-full text-left px-3 py-3 rounded-lg flex items-start transition-colors cursor-pointer ${
+                    isActive 
+                      ? 'bg-teal-50 dark:bg-teal-950/30 border-l-4 border-teal-500' 
+                      : 'hover:bg-stone-50 dark:hover:bg-stone-800/50 border-l-4 border-transparent'
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className={`text-sm font-medium ${isActive ? 'text-teal-700 dark:text-teal-400' : 'text-stone-700 dark:text-stone-300'}`}>
+                      {chapter.title}
+                    </div>
+                    <div className="flex items-center mt-1.5 space-x-0.5">
+                      {[1, 2, 3].map(star => (
+                        <Star 
+                          key={star} 
+                          className={`w-3.5 h-3.5 ${
+                            star <= stars 
+                              ? 'text-amber-500 fill-amber-500' 
+                              : 'text-stone-300 dark:text-stone-600'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+            {chapters.length === 0 && (
+              <div className="px-3 py-4 text-sm text-stone-500 dark:text-stone-400 italic">
+                No chapters available for this subject.
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
   );
 
   const renderNotes = () => {
     if (!activeChapter) return null;
 
     return (
-      <div className="flex-1 h-full overflow-y-auto bg-[#F7F7F5] dark:bg-[#0B0F1A] p-6 lg:p-10 relative">
+      <div className="flex-1 h-full overflow-y-auto bg-[#F7F7F5] dark:bg-[#0B0F1A] p-4 sm:p-6 lg:p-10 relative">
         <div className="max-w-3xl mx-auto">
+          {/* Top Bar with Show Study Board toggle when minimized */}
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+            {isSidebarMinimized ? (
+              <button
+                onClick={() => setIsSidebarMinimized(false)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#141824] border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-500 shadow-2xs text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                title="Open Study Notes Board"
+              >
+                <PanelLeftOpen className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span>Show Study Board</span>
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-teal-600 dark:text-teal-500 font-medium ml-auto">
+              <span>{SUBJECTS[selectedSubject].name}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span>Chapter Notes</span>
+            </div>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <div className="flex items-center space-x-2 text-sm text-teal-600 dark:text-teal-500 font-medium mb-3">
-              <span>{SUBJECTS[selectedSubject].name}</span>
-              <ChevronRight className="w-4 h-4" />
-              <span>Chapter Notes</span>
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-display font-bold text-stone-900 dark:text-stone-100 mb-6">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-stone-900 dark:text-stone-100 mb-4 sm:mb-6">
               {activeChapter.title}
             </h1>
             
             {activeChapter.introduction && (
-              <p className="text-lg text-stone-600 dark:text-stone-300 leading-relaxed">
+              <p className="text-base sm:text-lg text-stone-600 dark:text-stone-300 leading-relaxed">
                 {activeChapter.introduction}
               </p>
             )}
@@ -482,7 +541,7 @@ export function StudyMode({ initialSubject = 'general_awareness', onExit }: Stud
   };
 
   return (
-    <div className="h-full flex w-full overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] flex w-full overflow-hidden relative">
       {renderSidebar()}
       {studyView === 'notes' && renderNotes()}
       {studyView === 'quiz' && renderQuiz()}
@@ -492,11 +551,32 @@ export function StudyMode({ initialSubject = 'general_awareness', onExit }: Stud
           <div className="text-center max-w-md">
             <BookOpen className="w-16 h-16 text-teal-600/30 mx-auto mb-6" />
             <h2 className="text-2xl font-display font-bold text-stone-900 dark:text-stone-100 mb-3">Select a Chapter</h2>
-            <p className="text-stone-500 dark:text-stone-400">
-              Choose a chapter from the sidebar to start reading notes and taking chapter quizzes.
+            <p className="text-stone-500 dark:text-stone-400 mb-6">
+              Choose a chapter from the study notes board to start reading notes and taking chapter quizzes.
             </p>
+            {isSidebarMinimized && (
+              <button
+                onClick={() => setIsSidebarMinimized(false)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors cursor-pointer"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+                <span>Open Study Notes Board</span>
+              </button>
+            )}
           </div>
         </div>
+      )}
+
+      {/* Floating action button on mobile when sidebar is minimized */}
+      {isSidebarMinimized && (
+        <button
+          onClick={() => setIsSidebarMinimized(false)}
+          className="md:hidden fixed bottom-6 left-6 z-20 flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white rounded-full shadow-lg shadow-teal-900/20 font-medium text-sm transition-all cursor-pointer"
+          aria-label="Open Study Notes Board"
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Chapters</span>
+        </button>
       )}
     </div>
   );
