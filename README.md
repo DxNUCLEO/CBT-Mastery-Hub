@@ -71,7 +71,8 @@ Empowering aspirants with realistic exam simulations, structured syllabus notes,
 
 ### Installation
 
-1. **Clone the repository:**
+ ## Clone the repository:
    ```bash
-git clone [https://github.com/DxNUCLEO/CBT-Mastery-Hub.git](https://github.com/DxNUCLEO/CBT-Mastery-Hub.git)
-cd CBT-Mastery-Hub```
+   git clone https://github.com/DxNUCLEO/CBT-Mastery-Hub.git
+   cd CBT-Mastery-Hub
+   ```
