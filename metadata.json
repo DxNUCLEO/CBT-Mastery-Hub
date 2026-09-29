@@ -1,0 +1,6 @@
+{
+  "name": "ApexCBT - MCQ Exam & Learning Platform",
+  "description": "Interactive CBT MCQ exam simulator with real-time feedback, study and test modes, deep performance analytics, and comprehensive question banks for General Awareness, Science, English, and Mathematics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
